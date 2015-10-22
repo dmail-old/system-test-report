@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>Test report examples</title>
+</head>
+
+<body>
+	<main>
+		<report-list>
+		</report-list>
+	</main>
+
+	<script>
+	var folderName = 'system-test';
+	var reportFileLocation = 'lib/reporter/test-report/index.html';
+
+	function createFileContentPromise(path){
+		return new Promise(function(resolve, reject){
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', path);
+			xhr.onload = function(){
+				//var json = JSON.parse(xhr.responseText);
+				//renderReport(json);
+
+				resolve(xhr.responseText);
+			};
+			xhr.send();
+		});
+	}
+
+	createFileContentPromise('./').then(function(directoryString){
+		var lines = directoryString.split('\n');
+		lines.pop();
+		var directory = lines.shift();
+		var directoryLocation = directory.split(' ')[1].slice(0, -1);
+		var properties = lines.shift();
+		var entries = lines.map(function(line){
+			var parts = line.split(' ');
+			var fileName = decodeURIComponent(parts[1]);
+
+			return {
+				status: parts[0].slice(0, -1),
+				location: directoryLocation + '/' + fileName,
+				fileName: fileName,
+				size: Number(parts[2]),
+				mtime: new Date(decodeURIComponent(parts[3])),
+				type: parts[4]
+			};
+		});
+
+		return entries;
+	}).then(function(entries){
+		return entries.filter(function(entry){
+			return entry.type.toLowerCase() === 'directory';
+		});
+	}).then(function(directories){
+		var html = '';
+		var href = window.location.href;
+		var dirname = href.slice(0, href.indexOf('/' + folderName + '/'));
+		var reportLocation = dirname + '/' + folderName + '/' + reportFileLocation;
+
+		html+= '<ul>';
+		directories.forEach(function(directory){
+			html+= '<li>';
+			html+= '<a href="' + reportLocation + '?report=' + directory.location + '">' + directory.fileName + '</a>';
+			html+= '</li>';
+		});
+		html+= '</ul>';
+
+		return html;
+	}).then(function(html){
+		document.querySelector('report-list').innerHTML = html;
+	});
+	</script>
+</body>
+
+</html>

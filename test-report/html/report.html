@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>Test report</title>
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../css/report.css" />
+	<script type="text/javascript" src="../js/script.js"></script>
+</head>
+
+<body>
+	<main>
+		<h1>
+			Test report <name></name>
+		</h1>
+
+		<!--
+		<report>
+			<header>
+				<location>
+					<label>Location</label>
+					<value></value>
+				</location>
+
+				<platform>
+					<label>Platform</label>
+					<value></value>
+				</platform>
+				<date>
+					<label>Date</label>
+					<value></value>
+				</date>
+				<duration>
+					<label>Duration</label>
+					<value></value>
+				</duration>
+				<state>
+					<label>State</label>
+					<value></value>
+				</state>
+				<result>
+					<label>Result</label>
+					<value></value>
+				</result>
+			</header>
+		</report>
+		-->
+
+		<hr />
+
+		<section>
+			Loading files...
+		</section>
+	</main>
+
+	<script type="text/javascript">
+	// ici donc on va plutôt lire les fichiers du dossier et les afficher
+	// on va aussi afficher s'il existe un report.json pour chaque fichier de test
+	// si oui on peut afficher ces infos
+
+	function renderSuites(entries){
+		var header = [
+			'(' + entries.length + ') Files',
+			'Report'
+		];
+
+		var footer = [
+			'Totals',
+			''
+			/*
+			report.state,
+			'',
+			report.suites.reduce(function(previous, suite){ return previous + suite.duration; }, 0),
+			report.suites.reduce(function(previous, suite){ return previous + suite.tests.length; }, 0)
+			*/
+		];
+
+		var body = entries.map(function(entry, index){
+			var name, href, reportText;
+
+			// tant que c'est un dossier on se balade dedans
+			if( entry.type === 'DIRECTORY' ){
+				href = new URL(location);
+				href.searchParams.set('path', entry.location);
+				name = entry.fileName + '/';
+				reportText = '';
+			}
+			else{
+				href = entry.location;
+				name = entry.fileName;
+				reportText = 'Loading report...';
+				var selector = 'list table tr:nth-child(' + (index + 1) + ') td:nth-child(2)';
+
+				console.log('will update', 'list table tr:nth-child(' + index + ') td:nth-child(2)');
+
+				window.loadReport(entry.location).then(
+					function(){
+						document.querySelector(selector).innerHTML = 'Loaded';
+					},
+					function(){
+						document.querySelector(selector).innerHTML = 'No report found';
+					}
+				);
+			}
+
+			// on va faire un colspan avec loading report...
+			// et lorsque le repoest est loaded on enlève le colspan et on remplace par les valeurs du rapport
+			// de plus on ajouter des boutons d'actions genre relancer, etc
+			// qui ne marcheront que si un serveur écoute pour éxécuter ces actions
+
+			var row = {
+				/*
+				attributes: {
+					'data-state': suite.state
+				},
+				*/
+				cells: [
+					'<a href=" ' + href + '">' + name + '</a>',
+					{attributes: {colspan: 2}, value: reportText}
+					/*
+					suite.state,
+					'result 'in suite ? suite.result : '',
+					suite.duration,
+					suite.tests.length
+					*/
+				]
+			};
+
+			return row;
+		});
+
+		var tableHTML = window.Table.write({
+			header: header,
+			body: body,
+			//footer: footer
+		});
+
+		return tableHTML;
+	}
+
+	var params =new URLSearchParams(location.search.slice(1));
+	var path = params.get('path') || location.href.slice(0, location.href.indexOf('/html/'));
+
+	function renderReport(report){
+		document.querySelector('h1 name').innerHTML = path;
+		/*
+		document.querySelector('report location value').innerHTML = path;
+		document.querySelector('report platform value').innerHTML = '\
+		<name>' + report.platform.name + '</name><version><major>' + report.platform.version.major + '</major><minor>' + report.platform.version.minor + '</minor><patch>' + report.platform.version.patch + '</patch>\
+		</version>\
+		';
+		document.querySelector('report state').dataset.state = report.state;
+		document.querySelector('report state value').innerHTML = report.state;
+		document.querySelector('report date value').innerHTML = window.ago(new Date(), report.startDate);
+		document.querySelector('report duration value').innerHTML = report.duration + ' ms';
+		document.querySelector('report result value').innerHTML = window.ReportResult.write(report.result);
+
+		*/
+	}
+
+	renderReport(path);
+
+	window.readDirectory(path).then(
+		function(entries){
+			document.querySelector('section').innerHTML = '<list>' + renderSuites(entries) + '</list>';
+		},
+		function(){
+			console.log('no test files at', path);
+		}
+	);
+	</script>
+</body>
+
+</html>

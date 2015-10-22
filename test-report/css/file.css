@@ -1,0 +1,182 @@
+p[type="warning"]{
+	background-color: #feefb3;
+    color: #9f6000;
+    padding: 0.7em 0;
+}
+
+file{
+
+}
+
+file table{
+	max-width: 100%;
+    width: 100%;
+
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: scroll;
+    display: block;
+}
+
+file table tr{
+	font-family: monospace;
+}
+
+file table td{
+	padding: 0;
+	vertical-align: top;
+}
+
+file .line-state{
+	width: 1em;
+	text-align: center;
+}
+
+file .line-state>*{
+	width: 0.75em;
+	height: 0.75em;
+	display: inline-block;
+	border-radius: 50%;
+}
+
+file *[data-state="passed"] state{
+	background-color: green;
+}
+
+file *[data-state="failed"] state{
+	background-color: orange;
+}
+
+file *[data-state="errored"] state{
+	background-color: red;
+}
+
+file table .line-number{
+	border-right: 1px solid #bebebe;
+    font-family: monospace;
+    max-width: 52px;
+    width: 52px;
+    overflow-x: hidden;
+    text-align: right;
+}
+
+file table .line-number a{
+	padding: 0 4px;
+    display: block;
+    /*
+    word-break: break-all;
+    word-wrap: break-word;
+    */
+}
+
+file .line-comment a{
+	 opacity: 0;
+}
+
+file *[data-expanded] .line-comment a{
+	opacity: 1;
+}
+
+file .line-comment a:after{
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-color: transparent;
+	border-width: 0.5em;
+	display: inline-block;
+	vertical-align: middle;
+	content: "";
+
+	border-left-color: #868686;
+	border-right-width: 0;
+	border-left-width: 0.75em;
+}
+
+file *[data-expanded] .line-comment a:after{
+	border-left-color: transparent;
+	border-right-width: 0.5em;
+	border-left-width: 0.5em;
+
+	border-top-color: #868686;
+	border-bottom-width: 0;
+
+	border-top-width: 0.75em;
+}
+
+file *[data-comment] line{
+	cursor: pointer;
+}
+
+file tr:hover .line-comment a{
+	opacity: 1;
+}
+
+file .line-source comment{
+	display: none;
+}
+
+file *[data-expanded] .line-source comment{
+	display: block;
+}
+
+file table .line-comment{
+	background: transparent;
+	border: none;
+	padding: 0;
+	min-width: 1em;
+	width: 1em;
+    font-family: monospace;
+    color: #000;
+    overflow-x: hidden;
+}
+
+file line{
+	display: block;
+}
+
+file line{
+	display: block;
+	white-space: pre;
+	padding-left: 4px;
+}
+
+/*
+*[data-type="test"]>td>line{
+	background-color: lightblue;
+}
+
+*[data-state="passed"]>td>line{
+	background-color: #dfd;
+}
+
+*[data-state="failed"]>td>line{
+	background-color: #F5C98C;
+}
+*/
+
+file *:target .line-comment,
+file *:target line,
+file *:target comment{
+	background-color: #f8eec7;
+}
+
+file table[data-line-background] *[data-state="passed"] .line-comment,
+file table[data-line-background] *[data-state="passed"] line,
+file table[data-line-background] *[data-state="passed"] comment{
+	background-color: #dfd;
+}
+
+file table[data-line-background] *[data-state="failed"] .line-comment,
+file table[data-line-background] *[data-state="failed"] line,
+file table[data-line-background] *[data-state="failed"] comment{
+	background-color: #F5C98C;
+}
+
+file table[data-line-background] *[data-state="errored"] .line-comment,
+file table[data-line-background] *[data-state="errored"] line,
+file table[data-line-background] *[data-state="errored"] comment,
+file *[data-type="normal"][data-state="errored"] .line-comment,
+file *[data-type="normal"][data-state="errored"] line,
+file *[data-type="normal"][data-state="errored"] comment{
+	background-color: #fcd;
+}

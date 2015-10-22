@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>File</title>
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../css/file.css" />
+	<script type="text/javascript" src="../js/script.js"></script>
+	<script type="text/javascript" src="../js/file.js"></script>
+</head>
+
+<body>
+	<main>
+		<h1>
+			<name></name>
+		</h1>
+
+		<hr />
+
+		<section>
+			<file>
+
+			</file>
+		</section>
+	</main>
+
+	<script>
+	String.prototype.toElement = function(){
+		var div = document.createElement('div');
+		div.innerHTML = this.trim();
+		return div.firstChild;
+	};
+
+	var file = new URL(window.location).searchParams.get('file');
+	document.title = file;
+	document.querySelector('h1 name').innerHTML = file;
+	var fileTemplate = window.FileTemplate.create('main file');
+	fileTemplate.fetch(file, window.location.hash.slice(2));
+	</script>
+<body>
+
+</html>

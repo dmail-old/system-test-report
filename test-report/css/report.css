@@ -1,0 +1,15 @@
+name+version:before{
+	content: "@";
+}
+
+version{
+
+}
+
+version>major+minor:before{
+	content: ".";
+}
+
+version>minor+patch:before{
+	content: ".";
+}

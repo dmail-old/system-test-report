@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>Suite report</title>
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../css/file.css" />
+	<link rel="stylesheet" type="text/css" href="../css/suite.css" />
+	<script type="text/javascript" src="../js/script.js"></script>
+	<script type="text/javascript" src="../js/file.js"></script>
+</head>
+
+<body>
+	<main>
+		<h1>
+			Suite report for <name></name>
+		</h1>
+
+		<a href="./report.html">Back</a>
+
+		<report>
+			<header>
+				<location>
+					<label>Location</label>
+					<value></value>
+				</location>
+				<test-count>
+					<label>Tests</label>
+					<value></value>
+				</test-count>
+				<duration>
+					<label>Duration</label>
+					<value></value>
+				</duration>
+				<state>
+					<label>State</label>
+					<value></value>
+				</state>
+				<result>
+					<label>Result</label>
+					<value></value>
+				</result>
+
+			</header>
+		</report>
+
+		<hr />
+
+		<section>
+			<list>
+
+			</list>
+		</section>
+
+		<hr />
+
+		<section>
+			<file>
+
+			</file>
+		</section>
+	</main>
+
+	<script>
+	function renderList(suite){
+		var tableHTML =  window.Table.write({
+			header: ['(' + suite.tests.length + ')Tests', 'Origin', 'State', 'Result', 'Duration', 'Assertions'] ,
+			body: suite.tests.map(function(test){
+				var row = {
+					attributes: {
+						'data-state': test.state
+					},
+					cells: [
+						test.name,
+						'<a href="' + suite.url + '#L' + test.caller.lineNumber + '">' + suite.name + ':' + test.caller.lineNumber + '</a>',
+						test.state,
+						'result 'in test ? test.result : '',
+						test.duration,
+						test.assertions.length
+					]
+				};
+				return row;
+			}),
+			/*
+			footer: [
+				'Total',
+				suite.state,
+				'',
+				suite.tests.reduce(function(previous, test){
+					return previous + test.duration;
+				}, 0),
+				suite.tests.reduce(function(previous, test){
+					return previous + test.assertions.length;
+				}, 0)
+			]
+			*/
+		});
+
+		return tableHTML;
+	}
+
+	function renderSuite(suite){
+		document.querySelector('h1 name').innerHTML = suite.name;
+		document.querySelector('report location value').innerHTML = suite.fileName;
+		document.querySelector('report state').dataset.state = suite.state;
+		document.querySelector('report state value').innerHTML = suite.state;
+		document.querySelector('report duration value').innerHTML = suite.duration + ' ms';
+		document.querySelector('report result value').innerHTML = window.ReportResult.write(suite.result);
+		document.querySelector('report test-count value').innerHTML = suite.tests.length;
+		document.querySelector('list').innerHTML = renderList(suite);
+	}
+
+	function getAssertionsAtLine(lineNumber, suite){
+		var assertions = [];
+
+		for( var test of suite.tests ){
+			for(var entry of test.assertions.entries() ){
+				var index = entry[0];
+				var assertion = entry[1];
+
+				if( assertion.caller && assertion.caller.lineNumber === lineNumber ){
+					assertion.index = index;
+					assertions.push(assertion);
+				}
+			}
+		}
+
+		return assertions;
+	}
+
+	function getTestListAtLine(lineNumber, suite){
+		var tests = [];
+
+		for( var test of suite.tests ){
+			if( test.caller && test.caller.lineNumber === lineNumber ){
+				tests.push(test);
+			}
+		}
+
+		return tests;
+	}
+
+	function renderLineCommentAssertion(line, assertion){
+		var html = '';
+
+		html+= '<assertion>';
+		html+= '	<header>';
+		html+= '		<name>Assertion # ' + assertion.index + '</name>';
+		html+= '	</header>';
+		html+= '	<section>';
+		html+= '		<div>';
+		html+= '			<label>type</label>';
+		html+= '			<value>' + assertion.type + '</value>';
+		html+= '		</div>';
+		html+= '		<div>';
+		html+= '			<label>state</label>';
+		html+= '			<value>' + assertion.state + '</value>';
+		html+= '		</div>';
+		assertion.args.forEach(function(arg, index){
+		html+= '		<argument>';
+		html+= '			<label>arg ' + index  + ' </label>';
+		html+= '			<value>' + JSON.stringify(arg) + '</value>';
+		html+= '		</argument>';
+		});
+		html+= '	</section>';
+		html+= '	<footer>';
+		html+= '		<label>result</label>';
+		html+= '		<value>'+ JSON.stringify(assertion.result) +'</value>';
+		html+= '	</footer>';
+		html+= '</assertion>';
+
+		return html;
+	}
+
+	function fileHasErrorAtLine(fileName, lineNumber){
+		return Boolean(window.suite.result.stackTrace.callSites.find(function(callSite){
+			return callSite.source === fileName && callSite.lineNumber === lineNumber;
+		}));
+	}
+
+	window.loadReport().then(function(report){
+		document.querySelector('h1+a').href+= '?report=' + report.dirname;
+
+		var suiteName = new URL(window.location).searchParams.get('file');
+		var suite = report.suites.find(function(suite){
+			return suite.name === suiteName;
+		});
+		if( suite ){
+			document.title = 'Suite : ' + suite.name;
+		}
+		else{
+			throw new Error('cannot find the suite ' + suiteName);
+		}
+
+		return suite;
+	}).then(function(suite){
+		window.suite = suite;
+		renderSuite(suite);
+		return suite;
+	}).then(function(suite){
+		var fileTemplate = window.FileTemplate.create('file');
+
+		fileTemplate.prepareLine = function(line){
+			if( (suite.state === 'errored' || suite.state === 'failed') && suite.result && suite.result.stackTrace && fileHasErrorAtLine(suite.fileName, line.number) ){
+				line.state = 'errored';
+			}
+			else{
+				var assertions = getAssertionsAtLine(line.number, suite);
+				var lastAssertion = assertions[assertions.length - 1];
+
+				if( lastAssertion ){
+					line.type = 'assertion';
+					line.state = lastAssertion.state;
+					line.comment = assertions.map(function(assertion){
+						return renderLineCommentAssertion(line, assertion);
+					}).join('');
+				}
+			}
+		};
+
+		return fileTemplate.fetch(suite.fileName);
+	}).catch(function(error){
+		console.error(error);
+	});
+	</script>
+</body>
+
+</html>

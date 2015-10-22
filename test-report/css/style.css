@@ -1,0 +1,220 @@
+body{
+	color: #333;
+}
+
+*{
+	box-sizing: border-box;
+}
+
+a{
+	color: #337ab7;
+    text-decoration: none;
+}
+
+a:focus,
+a:hover{
+	color: #23527c;
+    text-decoration: underline;
+}
+
+a:active,
+a:hover{
+	outline: 0 none;
+}
+
+h1{
+    font-size: 2em;
+    margin: 0.7em 0;
+}
+
+table{
+	border-collapse: collapse;
+    border-spacing: 0;
+}
+
+main{
+    max-width: 1000px;
+    margin: 2.5em auto;
+}
+
+header>*{
+    clear: left;
+    display: block;
+}
+
+header>*>label{
+    font-weight: 700;
+    display: table-cell;
+}
+
+header>*>label+*{
+    display: table-cell;
+}
+
+header>*>label:after{
+    content: "\00a0:\00a0";
+}
+
+header>result>value{
+	white-space: pre;
+    font-family: monospace;
+}
+
+header>state>value{
+    font-weight: 700;
+}
+
+header>state[data-state="passed"]>value{
+	color: #3c763d;
+}
+
+header>state[data-state="failed"]>value{
+	color: #8a6d3b;
+}
+
+header>state[data-state="errored"]>value{
+	color: #a94442;
+}
+
+header>state[data-state="empty"]>value{
+    color: grey;
+}
+
+main>hr{
+    border: none;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-color: #eee;
+    margin: 1em 0;
+    height: 0;
+}
+
+report{
+    display: block;
+}
+
+list table{
+    font-size: 15px;
+    max-width: 100%;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+list table th,
+list table td{
+    padding: 0.5em;
+    line-height: 1.5em;
+    border-top: 1px solid #ddd;
+}
+
+list table th{
+    vertical-align: bottom;
+    text-align: left;
+}
+
+list table td{
+    vertical-align: top;
+}
+
+list table tr[data-state="errored"]{
+    background-color: #fcd;
+}
+
+list table tr[data-state="errored"]>td:nth-child(2){
+    font-weight: bold;
+    color: #a94442;
+}
+
+list table tr[data-state="created"]{
+    background-color: #EEE;
+}
+
+list table tr[data-state="passed"]{
+    background-color: #dfd;
+}
+
+list table tr[data-state="failed"]{
+    background-color: #F5C98C;
+}
+
+list table thead th{
+    border-bottom: 2px solid #ddd;
+    border-top: none;
+}
+
+error{
+    white-space: normal;
+}
+
+error>name{
+    display: inline;
+}
+
+error>message{
+    display: inline;
+    white-space: pre;
+}
+
+error>caller{
+    display: block;
+}
+
+error>trace{
+    display: block;
+    white-space: pre;
+}
+
+error>trace>callsite{
+    display: block;
+}
+
+error>trace>callsite>name:first-of-type:before{
+    content: "  at\00a0";
+}
+
+name[type="object"]:after{
+    content: ".";
+}
+
+name[type="function"]+name[type="method"]:before{
+    content: "[as\00a0\"";
+}
+
+name[type="function"]+name[type="method"]:after{
+    content: "\"]";
+}
+
+error location a{
+    font-weight: bold;
+}
+
+error location line:before{
+    content: ":";
+}
+
+error location column:before{
+    content: ":";
+}
+
+callsite name+location:before{
+    content: "\00a0(";
+}
+
+callsite name+location:after{
+    content: ")";
+}
+
+error>origin{
+    white-space: pre;
+}
+
+error>origin>span{
+    background-color: #fcd;
+}
+
+/*
+location a[href*="suite.html"]{
+    color: red;
+}
+*/

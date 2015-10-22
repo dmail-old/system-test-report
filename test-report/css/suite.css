@@ -1,0 +1,25 @@
+assertion{
+	display: block;
+	border: 1px solid black;
+}
+
+assertion header{
+	border-bottom: 1px solid black;
+}
+
+assertion argument{
+	display: block;
+}
+
+assertion label{
+	font-weight: bold;
+}
+
+assertion label:after{
+	content: " :";
+}
+
+assertion label+value{
+	font-family: monospace;
+	white-space: pre-line;
+}
