@@ -6,18 +6,38 @@ function basename(path, stripExtension){
 	return name;
 }
 
+function dirname(path){
+	return path.replace(/\/[^\/]*$/,'');
+}
+
 function createFileContentPromise(path){
 	return new Promise(function(resolve, reject){
+		var url = path;
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', path);
 		console.log('GET', path);
-		xhr.onload = function(){
-			resolve(xhr.responseText);
-		};
 
 		xhr.onreadystatechange = function(e){
-			if( xhr.status === 0 && xhr.responseText === '' ){
-				reject();
+			if( xhr.readyState === 4 ){
+				//console.log('here', url, xhr.status, xhr.responseText);
+
+				if( xhr.status === 0 ){
+					if( xhr.responseText == '' ){
+						xhr.status = 404;
+					}
+					else{
+						xhr.status = 200;
+					}
+				}
+
+				if( xhr.status === 200 ){
+					resolve(xhr.responseText);
+				}
+				else{
+					var error = new Error('file not found at ' + path);
+					error.code = 'ENOENT';
+					reject(error);
+				}
 			}
 		};
 
@@ -53,7 +73,7 @@ function readDirectory(path){
 function createReportPromise(path){
 	var filename = basename(path, true);
 
-	return createFileContentPromise(path + '/report/' + filename + '.json');
+	return createFileContentPromise(dirname(path) + '/report/' + filename + '.json');
 }
 
 function restoreDuration(item){
@@ -64,20 +84,18 @@ function restoreDuration(item){
 
 function loadReport(path){
 	return createReportPromise(path).then(JSON.parse).then(function(report){
-		//report.dirname = reportFolderLocation;
 		restoreDuration(report);
-		var fileName = suite.fileName;
+		var fileName = report.fileName;
 		var reportLocation = report.location;
 
 		if( fileName.indexOf(reportLocation) === 0 ){
 			fileName = fileName.slice(reportLocation.length + 1);
 		}
 
-		suite.name = fileName;
-		suite.url = ' ./suite.html?report=' + report.dirname + '&file=' + suite.name;
-		restoreDuration(suite);
+		report.name = fileName;
+		report.url = ' ./suite.html?report=' + report.dirname + '&file=' + report.name;
 
-		suite.tests.forEach(function(test){
+		report.tests.forEach(function(test){
 			restoreDuration(test);
 			test.assertions.forEach(function(assertion){
 				restoreDuration(assertion);
@@ -128,8 +146,13 @@ var Table = {
 		html+= '<thead>';
 		html+= '	<tr>';
 		headers.forEach(function(cell){
-		html+= '		<th>';
-		html+= '			' + cell;
+		if( typeof cell === 'string' ){
+			cell = {
+				value: cell
+			};
+		}
+		html+= '		<th ' + writeAttributes(cell.attributes) + '>';
+		html+= '			' + cell.value;
 		html+= '		</th>';
 		}, this);
 		html+= '	</tr>';

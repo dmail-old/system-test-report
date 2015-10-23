@@ -59,55 +59,79 @@
 	// on va aussi afficher s'il existe un report.json pour chaque fichier de test
 	// si oui on peut afficher ces infos
 
+	function startLoadingReport(index){
+		var reportLineSelector = 'list table tbody tr:nth-child(' + (index + 1) + ')';
+		var reportLine = document.querySelector(reportLineSelector);
+		var fileCell = reportLine.querySelector('td:nth-child(1)');
+		if( !fileCell ) console.log(index, reportLine);
+		var reportCell = reportLine.querySelector('td:nth-child(2)');
+		var fileLocation = fileCell.querySelector('a').href;
+		var loadButton = reportLine.querySelector('button[action="load"]');
+
+		reportCell.innerHTML = 'Loading report...';
+		loadButton.setAttribute('disabled', 'disabled');
+		reportLine.setAttribute('data-state', 'idle');
+
+		window.loadReport(fileLocation).then(
+			function(report){
+				reportCell.innerHTML = report.state;
+				reportLine.setAttribute('data-state', report.state);
+				loadButton.removeAttribute('disabled');
+			},
+			function(e){
+				// le report peut être not found ou avori une erreur
+				if( e && e.code === 'ENOENT'){
+					reportCell.innerHTML = 'Report not found'
+				}
+				else if( e && e.name === 'SyntaxError' ){
+					reportCell.innerHTML = String(e);
+				}
+				else if( e instanceof Error ){
+					reportCell.innerHTML = 'An error occured : ' + e;
+				}
+				else if( e ){
+					reportCell.innerHTML = 'Report load rejected with : ' + e;
+				}
+				else{
+					reportCell.innerHTML = 'Report load rejected without value';
+				}
+
+				reportLine.setAttribute('data-state', 'idle');
+				loadButton.removeAttribute('disabled');
+			}
+		);
+	}
+
 	function renderSuites(entries){
 		var header = [
 			'(' + entries.length + ') Files',
-			'Report'
+			'Report',
+			'Action'
 		];
 
 		var footer = [
 			'Totals',
 			''
-			/*
-			report.state,
-			'',
-			report.suites.reduce(function(previous, suite){ return previous + suite.duration; }, 0),
-			report.suites.reduce(function(previous, suite){ return previous + suite.tests.length; }, 0)
-			*/
 		];
 
 		var body = entries.map(function(entry, index){
-			var name, href, reportText;
+			var name, href, loadButton;
 
 			// tant que c'est un dossier on se balade dedans
 			if( entry.type === 'DIRECTORY' ){
 				href = new URL(location);
 				href.searchParams.set('path', entry.location);
 				name = entry.fileName + '/';
-				reportText = '';
+				loadButton = '';
 			}
 			else{
 				href = entry.location;
 				name = entry.fileName;
-				reportText = 'Loading report...';
-				var selector = 'list table tr:nth-child(' + (index + 1) + ') td:nth-child(2)';
+				loadButton = '<button action="load">Load report</button>';
 
-				console.log('will update', 'list table tr:nth-child(' + index + ') td:nth-child(2)');
-
-				window.loadReport(entry.location).then(
-					function(){
-						document.querySelector(selector).innerHTML = 'Loaded';
-					},
-					function(){
-						document.querySelector(selector).innerHTML = 'No report found';
-					}
-				);
+				// il pourrait aussi y avoir l'action run mais il faudrais un serveur local pour ça
+				// maintenant faut : gérer le cas ou le rapport existe
 			}
-
-			// on va faire un colspan avec loading report...
-			// et lorsque le repoest est loaded on enlève le colspan et on remplace par les valeurs du rapport
-			// de plus on ajouter des boutons d'actions genre relancer, etc
-			// qui ne marcheront que si un serveur écoute pour éxécuter ces actions
 
 			var row = {
 				/*
@@ -117,13 +141,8 @@
 				*/
 				cells: [
 					'<a href=" ' + href + '">' + name + '</a>',
-					{attributes: {colspan: 2}, value: reportText}
-					/*
-					suite.state,
-					'result 'in suite ? suite.result : '',
-					suite.duration,
-					suite.tests.length
-					*/
+					{attributes: {colspan: 1}, value: ''},
+					loadButton
 				]
 			};
 
@@ -144,19 +163,6 @@
 
 	function renderReport(report){
 		document.querySelector('h1 name').innerHTML = path;
-		/*
-		document.querySelector('report location value').innerHTML = path;
-		document.querySelector('report platform value').innerHTML = '\
-		<name>' + report.platform.name + '</name><version><major>' + report.platform.version.major + '</major><minor>' + report.platform.version.minor + '</minor><patch>' + report.platform.version.patch + '</patch>\
-		</version>\
-		';
-		document.querySelector('report state').dataset.state = report.state;
-		document.querySelector('report state value').innerHTML = report.state;
-		document.querySelector('report date value').innerHTML = window.ago(new Date(), report.startDate);
-		document.querySelector('report duration value').innerHTML = report.duration + ' ms';
-		document.querySelector('report result value').innerHTML = window.ReportResult.write(report.result);
-
-		*/
 	}
 
 	renderReport(path);
@@ -164,6 +170,16 @@
 	window.readDirectory(path).then(
 		function(entries){
 			document.querySelector('section').innerHTML = '<list>' + renderSuites(entries) + '</list>';
+
+			for( button of document.querySelectorAll('button[action="load"]') ){
+				button.addEventListener('click', function(){
+					var line = button.parentNode.parentNode;
+					var lineIndex = [].indexOf.call(line.parentNode.children, line);
+					startLoadingReport(lineIndex);
+				});
+
+				button.click();
+			}
 		},
 		function(){
 			console.log('no test files at', path);

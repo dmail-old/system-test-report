@@ -1,0 +1,41 @@
+{
+	"fileName": "file:///C:/Users/Damien/Documents/GitHub/system-test/test/0-introduction.js",
+	"state": "passed",
+	"startDate": "2015-10-23T10:20:06.725Z",
+	"endDate": "2015-10-23T10:20:06.764Z",
+	"tests": [
+		{
+			"name": "suite first argument register a test name and function",
+			"state": "passed",
+			"startDate": "2015-10-23T10:20:06.763Z",
+			"endDate": "2015-10-23T10:20:06.763Z",
+			"assertions": [],
+			"caller": {
+				"fileName": "file:///C:/Users/Damien/Documents/GitHub/system-test/test/0-introduction.js",
+				"lineNumber": 2,
+				"columnNumber": 2
+			}
+		},
+		{
+			"name": "suite first argument call the function and catch error",
+			"state": "passed",
+			"startDate": "2015-10-23T10:20:06.763Z",
+			"endDate": "2015-10-23T10:20:06.763Z",
+			"assertions": [],
+			"caller": {
+				"fileName": "file:///C:/Users/Damien/Documents/GitHub/system-test/test/0-introduction.js",
+				"lineNumber": 6,
+				"columnNumber": 2
+			}
+		}
+	],
+	"platform": {
+		"type": "process",
+		"name": "node",
+		"version": {
+			"major": 0,
+			"minor": 12,
+			"patch": 0
+		}
+	}
+}
