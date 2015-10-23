@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8" />
-	<title>Test report</title>
+	<title>Report explorer</title>
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<link rel="stylesheet" type="text/css" href="../css/report.css" />
 	<script type="text/javascript" src="../js/script.js"></script>
@@ -15,38 +15,6 @@
 			Test report <name></name>
 		</h1>
 
-		<!--
-		<report>
-			<header>
-				<location>
-					<label>Location</label>
-					<value></value>
-				</location>
-
-				<platform>
-					<label>Platform</label>
-					<value></value>
-				</platform>
-				<date>
-					<label>Date</label>
-					<value></value>
-				</date>
-				<duration>
-					<label>Duration</label>
-					<value></value>
-				</duration>
-				<state>
-					<label>State</label>
-					<value></value>
-				</state>
-				<result>
-					<label>Result</label>
-					<value></value>
-				</result>
-			</header>
-		</report>
-		-->
-
 		<hr />
 
 		<section>
@@ -55,24 +23,22 @@
 	</main>
 
 	<script type="text/javascript">
-	// ici donc on va plutôt lire les fichiers du dossier et les afficher
-	// on va aussi afficher s'il existe un report.json pour chaque fichier de test
-	// si oui on peut afficher ces infos
-
 	function startLoadingReport(index){
 		var reportLineSelector = 'list table tbody tr:nth-child(' + (index + 1) + ')';
 		var reportLine = document.querySelector(reportLineSelector);
 		var fileCell = reportLine.querySelector('td:nth-child(1)');
 		if( !fileCell ) console.log(index, reportLine);
 		var reportCell = reportLine.querySelector('td:nth-child(2)');
-		var fileLocation = fileCell.querySelector('a').href;
+		var fileLocationLink = fileCell.querySelector('a');
 		var loadButton = reportLine.querySelector('button[action="load"]');
+
+		var filePath = fileLocationLink.searchParams.get('path');
 
 		reportCell.innerHTML = 'Loading report...';
 		loadButton.setAttribute('disabled', 'disabled');
 		reportLine.setAttribute('data-state', 'idle');
 
-		window.loadReport(fileLocation).then(
+		window.loadReport(filePath).then(
 			function(report){
 				reportCell.innerHTML = report.state;
 				reportLine.setAttribute('data-state', report.state);
@@ -90,6 +56,7 @@
 					reportCell.innerHTML = 'An error occured : ' + e;
 				}
 				else if( e ){
+					console.log(e);
 					reportCell.innerHTML = 'Report load rejected with : ' + e;
 				}
 				else{
@@ -125,7 +92,7 @@
 				loadButton = '';
 			}
 			else{
-				href = entry.location;
+				href = './file.html?path=' + entry.location;
 				name = entry.fileName;
 				loadButton = '<button action="load">Load report</button>';
 
@@ -173,7 +140,7 @@
 
 			for( button of document.querySelectorAll('button[action="load"]') ){
 				button.addEventListener('click', function(){
-					var line = button.parentNode.parentNode;
+					var line = this.parentNode.parentNode;
 					var lineIndex = [].indexOf.call(line.parentNode.children, line);
 					startLoadingReport(lineIndex);
 				});

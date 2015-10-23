@@ -10,8 +10,16 @@ function dirname(path){
 	return path.replace(/\/[^\/]*$/,'');
 }
 
+function forceMinSettleDurationOfThenable(thenable, duration){
+	return new Promise(function(resolve){
+		setTimeout(resolve, duration);
+	}).then(function(){
+		return thenable;
+	});
+}
+
 function createFileContentPromise(path){
-	return new Promise(function(resolve, reject){
+	var fileContentPromise = new Promise(function(resolve, reject){
 		var url = path;
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', path);
@@ -31,9 +39,11 @@ function createFileContentPromise(path){
 				}
 
 				if( xhr.status === 200 ){
+					console.log(200, url);
 					resolve(xhr.responseText);
 				}
 				else{
+					console.log(404, url);
 					var error = new Error('file not found at ' + path);
 					error.code = 'ENOENT';
 					reject(error);
@@ -43,6 +53,8 @@ function createFileContentPromise(path){
 
 		xhr.send();
 	});
+
+	return forceMinSettleDurationOfThenable(fileContentPromise, 250);
 }
 
 function readDirectory(path){
@@ -93,7 +105,6 @@ function loadReport(path){
 		}
 
 		report.name = fileName;
-		report.url = ' ./suite.html?report=' + report.dirname + '&file=' + report.name;
 
 		report.tests.forEach(function(test){
 			restoreDuration(test);
